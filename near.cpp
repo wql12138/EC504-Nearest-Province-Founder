@@ -279,7 +279,34 @@ void search_tree()
 	upsearch(cur_node);
 }
 
-int main()
+int myatoi(const char *nptr)	// string to int
+{
+	int result = 0;
+	int mark = 1;
+	const char *p = nptr;
+	while (*nptr!='\0')
+	{
+		if (*nptr>='0'&&*nptr<='9')
+		{
+			result *= 10;
+			result+=*nptr - 48;
+			
+			nptr++;
+ 
+		}
+		else
+		{
+			if (nptr == p && *nptr == '-')
+				mark = 0;
+			break;
+		}
+	}
+	if(mark == 0)
+		result = -result;
+	return result;
+}
+
+int main(int argc, char* argv[])
 {
 	double latq, lngq; // latitude_query, longitude_query
 	int i,j;
@@ -370,15 +397,29 @@ int main()
 			c[i].dis = 99;
 		}
 	}
-	
+	/* For test 
 	// search
 	cin >> latq >> lngq >> Ko;
 	if (Ko > K)
 		K = Ko;
 	//latq = 40; lngq = -70;
+	*/ 
+	if (argc == 4 && myatoi(argv[3]) >= 1 && myatoi(argv[3]) <= 10)
+	{
+		latq = myatoi(argv[1]);
+		lngq = myatoi(argv[2]);
+		Ko = myatoi(argv[3]);
+	}
+	else
+	{
+		printf("%d",myatoi(argv[3]));
+		printf("Please input latitude, longitude, K in order, 1 <= K <= 10.\nUsing command ./near [lat] [lng] [K]");
+		return 0; 
+	}
 	q.lat = latq*pi/180;
 	q.lng = lngq;
-	
+	if (Ko > K)
+		K = Ko;
 	//printf("%d\n",root_index);
 	//cout<<c[0].parent<<" "<<c[0].dis<<" "<<c[1].parent<<" "<<c[1].dis<<endl;
 	search_tree();
@@ -409,13 +450,35 @@ int main()
 				sort_ind[i] = sort_ind[j];
 				sort_ind[j] = tmpi; 
 			}
-	for(i=0; i<sort_index; i++)
+	for(i=0; i<Ko; i++)
 	{
 		//s = node_ind[i];
 		//printf("name: %s, state id: %s, latitude: %f, longitude: %f, distance: %f km\n", c[s].name, c[s].state_id, c[s].lat/pi*180, c[s].lng, c[s].dis*6371);
 		s = sort_ind[i];
 		printf("name: %s, state id: %s, latitude: %f, longitude: %f, distance: %f km\n", c[s].name, c[s].state_id, c[s].lat/pi*180, c[s].lng, c[s].dis*6371);
 	}
+	
+	char state[10] = {""};
+	int knncount[5] = {0};
+	int flag = 1;
+	int state_ind = 0;
+	for(i=0;i<5;i++)
+	{
+		flag = 1;
+		for(j=0;j<10;j=j+2)
+			if(state[j] == c[sort_ind[i]].state_id[0] && state[j+1] == c[sort_ind[i]].state_id[1])
+			{
+				knncount[j/2]++;
+				flag = 0;
+				break;
+			}
+		if(flag)
+		{
+			state[j] = c[sort_ind[i]].state_id[0];
+			state[j+1] = c[sort_ind[i]].state_id[1];
+		}
+	}
+			
 	
 	/*
 	double shortest = 99;
@@ -428,6 +491,5 @@ int main()
 		}	
 	printf("name: %s, state id: %s, distance: %f km\n", c[shortind].name, c[shortind].state_id, shortest*6371);
   	*/
-	system("pause");
 	return 0;
 } 
